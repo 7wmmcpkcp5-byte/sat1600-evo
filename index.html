@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SAT PRO MASTER EVO</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>SAT PRO MASTER EVO</h1>
+    <div id="header-level" class="header-level">
+      <span id="header-level-name"></span>
+      <span id="header-xp"></span>
+    </div>
+  </header>
+
+  <main id="app-root">
+    <section id="view-home" class="view active">
+      <h2>Welcome</h2>
+      <p>Train for the SAT with realistic questions, full exams and pro analytics.</p>
+      <div class="card-grid">
+        <button class="card nav-btn" data-target="home">Home</button>
+        <button class="card nav-btn" data-target="practice">Practice</button>
+        <button class="card nav-btn" data-target="exam">Full Exam</button>
+        <button class="card nav-btn" data-target="analytics">Analytics</button>
+        <button class="card nav-btn" data-target="parents">Parents</button>
+      </div>
+    </section>
+
+    <section id="view-practice" class="view">
+      <h2>Practice</h2>
+      <div class="practice-controls">
+        <label>
+          Section
+          <select id="practice-section">
+            <option value="reading">Reading</option>
+            <option value="writing">Writing</option>
+            <option value="math">Math</option>
+          </select>
+        </label>
+        <label>
+          Difficulty
+          <select id="practice-difficulty">
+            <option value="any">Any</option>
+            <option value="easy">Easy</</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </label>
+        <button id="btn-start-practice">Start session</button>
+      </div>
+      <div id="practice-session" class="session hidden">
+        <div class="session-meta">
+          <span id="practice-meta-label"></span>
+          <div class="progress">
+            <div id="practice-progress-bar" class="progress-bar"></div>
+          </div>
+        </div>
+        <div id="practice-question-container"></div>
+        <div id="practice-explanation" class="explanation"></div>
+        <div class="session-actions">
+          <button id="btn-practice-prev">Previous</button>
+          <button id="btn-practice-next">Next</button>
+          <button id="btn-practice-finish">Finish</button>
+        </div>
+      </div>
+      <div id="practice-summary" class="summary hidden"></div>
+    </section>
+
+    <section id="view-exam" class="view">
+      <h2>Full SAT Exam</h2>
+      <p>Simulated exam with Reading/Writing and Math sections.</p>
+      <div id="exam-intro">
+        <p>Total questions: 40 (sample mini-exam)</p>
+        <p>Estimated time: 60 minutes</p>
+        <button id="btn-start-exam">Start Exam</button>
+      </div>
+      <div id="exam-session" class="session hidden">
+        <div class="session-meta">
+          <span id="exam-meta-label"></span>
+          <span id="exam-timer" class="exam-timer">60:00</span>
+        </div>
+        <div id="exam-question-container"></div>
+        <div class="session-actions">
+          <button id="btn-exam-prev">Previous</button>
+          <button id="btn-exam-next">Next</button>
+          <button id="btn-exam-finish">Finish Exam</button>
+        </div>
+      </div>
+      <div id="exam-summary" class="summary hidden"></div>
+    </section>
+
+    <section id="view-analytics" class="view">
+      <h2>Analytics</h2>
+      <div id="analytics-content"></div>
+    </section>
+
+    <section id="view-parents" class="view">
+      <h2>Parent Dashboard</h2>
+      <div id="parent-content"></div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn" data-target="home">Home</button>
+    <button class="nav-btn" data-target="practice">Practice</button>
+    <button class="nav-btn" data-target="exam">Exam</button>
+    <button class="nav-btn" data-target="analytics">Analytics</button>
+    <button class="nav-btn" data-target="parents">Parents</button>
+  </nav>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

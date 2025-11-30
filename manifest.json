@@ -1,0 +1,9 @@
+{
+  "name": "SAT PRO MASTER EVO",
+  "short_name": "SAT PRO",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#05070b",
+  "theme_color": "#2ecc71",
+  "icons": []
+}
