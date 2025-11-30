@@ -2,334 +2,63 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#3b82f6">
-    <meta name="description" content="SAT OWL EVO 7 Premium - La mejor preparación para el SAT en tu móvil">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SAT OWL EVO 7 Premium</title>
-    
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="manifest.json">
-    
-    <!-- iOS Meta Tags -->
-    <link rel="apple-touch-icon" href="assets/icon-192.png">
-    <meta name="apple-mobile-web-app-title" content="SAT OWL">
-    
-    <!-- Styles -->
     <link rel="stylesheet" href="styles.css">
-    
-    <!-- Preload crítico para móviles -->
-    <link rel="preload" href="app-main.js" as="script">
+    <link rel="manifest" href="manifest.json">
 </head>
 <body>
-    <!-- App Container -->
-    <div id="app">
-        <!-- Header fijo para móviles -->
+    <div class="app-container">
+        <!-- Header -->
         <header class="app-header">
-            <div class="header-content">
-                <div class="header-left">
-                    <button class="menu-toggle" id="menu-toggle">☰</button>
-                    <h1 class="app-title">🦉 SAT OWL</h1>
-                </div>
-                <div class="header-right" id="evolution-widget">
-                    <!-- Widget de evolución se carga aquí -->
-                </div>
+            <div class="app-title">SAT-1600</div>
+            <div class="user-info">
+                <div class="evo-badge">EVO</div>
+                <div>Alex</div>
             </div>
-            
-            <!-- Navegación móvil (oculta por defecto) -->
-            <nav class="mobile-nav" id="mobile-nav">
-                <button class="nav-btn active" data-view="dashboard">
-                    <span class="nav-icon">📊</span>
-                    <span class="nav-text">Inicio</span>
-                </button>
-                <button class="nav-btn" data-view="practice">
-                    <span class="nav-icon">🎯</span>
-                    <span class="nav-text">Práctica</span>
-                </button>
-                <button class="nav-btn" data-view="exam">
-                    <span class="nav-icon">📝</span>
-                    <span class="nav-text">Examen</span>
-                </button>
-                <button class="nav-btn" data-view="analytics">
-                    <span class="nav-icon">📈</span>
-                    <span class="nav-text">Estadísticas</span>
-                </button>
-                <button class="nav-btn" data-view="parent-dashboard">
-                    <span class="nav-icon">👨‍👩‍👧‍👦</span>
-                    <span class="nav-text">Padres</span>
-                </button>
-            </nav>
         </header>
 
-        <!-- Contenido Principal -->
-        <main id="main-content">
-            <!-- Pantalla de Carga -->
-            <div id="loading-view" class="view active">
-                <div class="loading-container">
-                    <div class="loading-owl">🦉</div>
-                    <h2>SAT OWL EVO 7</h2>
-                    <p>Cargando tu preparación...</p>
-                    <div class="loading-bar">
-                        <div class="loading-progress"></div>
-                    </div>
-                </div>
+        <!-- Saludo -->
+        <div class="greeting">
+            <h1>Hi, Alex!</h1>
+        </div>
+
+        <!-- Score Card -->
+        <div class="score-card">
+            <div class="score-display">
+                <div class="current-score">400</div>
+                <div>Current SAT Score</div>
             </div>
-
-            <!-- Dashboard Principal -->
-            <div id="dashboard-view" class="view">
-                <div class="dashboard-header">
-                    <h2>¡Bienvenido!</h2>
-                    <p>Prepárate para dominar el SAT</p>
-                </div>
-
-                <!-- Tarjetas de Estadísticas Rápidas -->
-                <div class="stats-grid">
-                    <div class="stat-card quick-stat">
-                        <div class="stat-icon">🎯</div>
-                        <div class="stat-info">
-                            <div class="stat-value" id="quick-accuracy">--%</div>
-                            <div class="stat-label">Precisión</div>
-                        </div>
-                    </div>
-                    <div class="stat-card quick-stat">
-                        <div class="stat-icon">🔥</div>
-                        <div class="stat-info">
-                            <div class="stat-value" id="quick-streak">0</div>
-                            <div class="stat-label">Racha</div>
-                        </div>
-                    </div>
-                    <div class="stat-card quick-stat">
-                        <div class="stat-icon">⏱️</div>
-                        <div class="stat-info">
-                            <div class="stat-value" id="quick-time">0m</div>
-                            <div class="stat-label">Tiempo</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Selector Rápido de Materias -->
-                <div class="quick-actions">
-                    <h3>Practicar Materia</h3>
-                    <div class="subject-cards">
-                        <div class="subject-card math" data-subject="math">
-                            <div class="subject-icon">📐</div>
-                            <div class="subject-name">Matemáticas</div>
-                            <div class="subject-stats" id="math-stats">0/0</div>
-                        </div>
-                        <div class="subject-card reading" data-subject="reading">
-                            <div class="subject-icon">📖</div>
-                            <div class="subject-name">Lectura</div>
-                            <div class="subject-stats" id="reading-stats">0/0</div>
-                        </div>
-                        <div class="subject-card writing" data-subject="writing">
-                            <div class="subject-icon">✏️</div>
-                            <div class="subject-name">Escritura</div>
-                            <div class="subject-stats" id="writing-stats">0/0</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Acciones Principales -->
-                <div class="main-actions">
-                    <button class="action-btn primary" id="quick-practice-btn">
-                        <span class="btn-icon">🚀</span>
-                        <span class="btn-text">Práctica Rápida</span>
-                    </button>
-                    <button class="action-btn secondary" id="full-exam-btn">
-                        <span class="btn-icon">📝</span>
-                        <span class="btn-text">Simular Examen</span>
-                    </button>
-                </div>
-
-                <!-- Progreso de Hoy -->
-                <div class="daily-progress">
-                    <h3>Progreso de Hoy</h3>
-                    <div class="progress-card">
-                        <div class="progress-info">
-                            <div class="progress-text">Preguntas contestadas hoy</div>
-                            <div class="progress-value" id="daily-questions">0</div>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="daily-progress-fill"></div>
-                        </div>
-                    </div>
-                </div>
+            <div class="xp-display">
+                <span>XP: 0</span>
             </div>
+        </div>
 
-            <!-- Vista de Práctica/Quiz -->
-            <div id="quiz-view" class="view">
-                <div class="quiz-header">
-                    <button class="back-btn" id="quiz-back-btn">‹</button>
-                    <div class="quiz-info">
-                        <div class="quiz-subject" id="quiz-subject">Matemáticas</div>
-                        <div class="quiz-progress">
-                            <span id="current-question">1</span>/<span id="total-questions">10</span>
-                        </div>
-                    </div>
-                    <div class="quiz-timer" id="quiz-timer">10:00</div>
-                </div>
-
-                <div class="question-container">
-                    <div class="question-content">
-                        <div id="question-text" class="question-text">
-                            Cargando pregunta...
-                        </div>
-                        
-                        <div id="question-options" class="options-container">
-                            <!-- Opciones se cargan dinámicamente -->
-                        </div>
-                    </div>
-                </div>
-
-                <div class="quiz-footer">
-                    <div class="quiz-actions">
-                        <button class="quiz-btn hint" id="hint-btn">
-                            <span class="btn-icon">💡</span>
-                            Pista
-                        </button>
-                        <button class="quiz-btn explanation" id="explanation-btn">
-                            <span class="btn-icon">📚</span>
-                            Explicación
-                        </button>
-                    </div>
-                    <button class="quiz-btn primary submit" id="submit-answer-btn" disabled>
-                        <span class="btn-icon">✓</span>
-                        Enviar Respuesta
-                    </button>
-                    <button class="quiz-btn primary next" id="next-question-btn" style="display: none;">
-                        <span class="btn-icon">→</span>
-                        Siguiente
-                    </button>
-                </div>
+        <!-- Subject & Level -->
+        <div class="subject-card">
+            <div class="section-title">Subject & Level</div>
+            <div class="subject-info">
+                <div class="subject-name">MATH</div>
+                <div class="level-badge">Level 1</div>
             </div>
+        </div>
 
-            <!-- Vista de Examen Completo -->
-            <div id="exam-view" class="view">
-                <div class="exam-container">
-                    <div class="exam-header">
-                        <h2>Simulacro de SAT Completo</h2>
-                        <p>3 horas • 154 preguntas</p>
-                    </div>
-
-                    <div class="exam-info">
-                        <div class="info-card">
-                            <div class="info-icon">⏱️</div>
-                            <div class="info-content">
-                                <h4>Tiempo Total</h4>
-                                <p>180 minutos</p>
-                            </div>
-                        </div>
-                        <div class="info-card">
-                            <div class="info-icon">📊</div>
-                            <div class="info-content">
-                                <h4>Secciones</h4>
-                                <p>Lectura • Escritura • Matemáticas</p>
-                            </div>
-                        </div>
-                        <div class="info-card">
-                            <div class="info-icon">🎯</div>
-                            <div class="info-content">
-                                <h4>Puntuación</h4>
-                                <p>400-1600 puntos</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="exam-preparation">
-                        <h3>Antes de Empezar:</h3>
-                        <ul class="prep-list">
-                            <li>✅ Encuentra un lugar tranquilo</li>
-                            <li>✅ Ten lápiz y papel a mano</li>
-                            <li>✅ Desactiva notificaciones</li>
-                            <li>✅ Prepárate para 3 horas</li>
-                        </ul>
-                    </div>
-
-                    <button class="action-btn primary large" id="start-exam-btn">
-                        <span class="btn-icon">🚀</span>
-                        Comenzar Examen
-                    </button>
-                </div>
-            </div>
-
-            <!-- Vista de Analytics -->
-            <div id="analytics-view" class="view">
-                <div class="analytics-header">
-                    <h2>Tus Estadísticas</h2>
-                    <p>Sigue tu progreso</p>
-                </div>
-
-                <div class="analytics-container">
-                    <div id="analytics-content">
-                        <!-- Se carga dinámicamente desde analytics.js -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Vista para Padres -->
-            <div id="parent-dashboard-view" class="view">
-                <div class="parent-header">
-                    <h2>Panel para Padres</h2>
-                    <p>Sigue el progreso de tu estudiante</p>
-                </div>
-
-                <div class="parent-container">
-                    <div id="parent-dashboard-content">
-                        <!-- Se carga dinámicamente desde parent-dashboard.js -->
-                    </div>
-                </div>
-            </div>
-        </main>
-
-        <!-- Navegación Inferior Móvil -->
-        <nav class="bottom-nav">
-            <button class="nav-btn active" data-view="dashboard">
-                <span class="nav-icon">📊</span>
-                <span class="nav-text">Inicio</span>
+        <!-- Training Modes -->
+        <div class="training-modes">
+            <div class="section-title">Training modes</div>
+            
+            <button class="mode-button" id="practice-mode">
+                <div class="mode-title">Practice</div>
+                <div class="mode-description">Normal training, full feedback</div>
             </button>
-            <button class="nav-btn" data-view="practice">
-                <span class="nav-icon">🎯</span>
-                <span class="nav-text">Práctica</span>
+            
+            <button class="mode-button" id="adaptive-mode">
+                <div class="mode-title">Adaptive</div>
+                <div class="mode-description">Difficulty tag, game engine...</div>
             </button>
-            <button class="nav-btn" data-view="exam">
-                <span class="nav-icon">📝</span>
-                <span class="nav-text">Examen</span>
-            </button>
-            <button class="nav-btn" data-view="analytics">
-                <span class="nav-icon">📈</span>
-                <span class="nav-text">Stats</span>
-            </button>
-            <button class="nav-btn" data-view="parent-dashboard">
-                <span class="nav-icon">👨‍👩‍👧‍👦</span>
-                <span class="nav-text">Padres</span>
-            </button>
-        </nav>
-    </div>
-
-    <!-- Modal de Tutor/Tutorial -->
-    <div id="tutor-modal" class="modal">
-        <div class="modal-backdrop"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="modal-title">Ayuda</h3>
-                <button class="modal-close" id="modal-close">×</button>
-            </div>
-            <div class="modal-body" id="modal-body">
-                <!-- Contenido del modal se carga aquí -->
-            </div>
         </div>
     </div>
 
-    <!-- Scripts -->
     <script type="module" src="app-main.js"></script>
-    
-    <!-- Fallback para navegadores muy antiguos -->
-    <script nomodule>
-        alert("Para una mejor experiencia, actualiza tu navegador móvil a una versión más reciente.");
-        window.location.href = "https://browsehappy.com/";
-    </script>
 </body>
 </html>
