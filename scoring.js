@@ -1,3 +1,4 @@
+// scoring.js
 export function convertRawToScaled(raw, maxRaw) {
   if (maxRaw <= 0) return 200;
   const ratio = raw / maxRaw;
@@ -15,4 +16,21 @@ export function computeSatScores(results) {
     mathScaled,
     total: readingScaled + mathScaled
   };
+}
+
+export class ScoringSystem {
+  static calculateSectionScore(correct, total) {
+    return convertRawToScaled(correct, total);
+  }
+
+  static calculateTotalScore(readingScore, mathScore) {
+    return readingScore + mathScore;
+  }
+
+  static getScoreInterpretation(totalScore) {
+    if (totalScore >= 1400) return "Excellent! College ready!";
+    if (totalScore >= 1200) return "Good! Competitive for many colleges.";
+    if (totalScore >= 1000) return "Developing. Keep practicing!";
+    return "Needs improvement. Focus on fundamentals.";
+  }
 }

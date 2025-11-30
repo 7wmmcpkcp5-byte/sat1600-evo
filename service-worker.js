@@ -1,44 +1,52 @@
-const CACHE_NAME = "sat-pro-master-evo-v1";
-const URLS_TO_CACHE = [
-  "./",
-  "./index.html",
-  "./style.css",
-  "./app.js",
-  "./router.js",
-  "./questions-reading.js",
-  "./questions-writing.js",
-  "./questions-math.js",
-  "./explanations.js",
-  "./exam-engine.js",
-  "./scoring.js",
-  "./analytics.js",
-  "./gamification.js",
-  "./parent-dashboard.js",
-  "./ai-tutor.js",
-  "./premium-features.js",
-  "./manifest.json"
+// service-worker.js actualizado
+const CACHE_NAME = 'sat-evo-v5.0-modular';
+const FILES = [
+  './',
+  'index.html',
+  'styles.css',
+  'app-main.js',
+  'config.js',
+  'quiz-engine.js',
+  'storage.js',
+  'ui-components.js',
+  'questions.js',
+  'ai-tutor.js',
+  'exam-engine.js',
+  'gamification.js',
+  'premium-features.js',
+  'explanations.js',
+  'router.js',
+  'manifest.json',
+  'service-worker.js',
+  'avatar_phase1.png',
+  'avatar_phase2.png',
+  'avatar_phase3.png',
+  'icon-192.png',
+  'icon-512.png'
 ];
 
-self.addEventListener("install", event => {
+self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(URLS_TO_CACHE))
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(FILES))
+      .then(() => self.skipWaiting())
   );
 });
 
-self.addEventListener("activate", event => {
+self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(
-        keys.map(k => {
-          if (k !== CACHE_NAME) return caches.delete(k);
-        })
-      )
-    )
+      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+    ).then(() => self.clients.claim())
   );
 });
 
-self.addEventListener("fetch", event => {
+self.addEventListener('fetch', (event) => {
+  const req = event.request;
+  if (req.method !== 'GET') return;
   event.respondWith(
-    caches.match(event.request).then(resp => resp || fetch(event.request))
+    caches.match(req).then(cached =>
+      cached || fetch(req).catch(() => cached)
+    )
   );
 });

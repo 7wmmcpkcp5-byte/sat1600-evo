@@ -1,41 +1,26 @@
-const LS_KEY = "sat_pro_master_evo_premium";
+// premium-features.js como módulo ES6
+export const PremiumManager = {
+    isPremium: true, // dejamos true por ahora para que tu hijo tenga todo desbloqueado
 
-export class PremiumFeatures {
-  constructor() {
-    this.features = {
-      aiTutor: false,
-      fullAnalytics: true,
-      parentDeepDive: true,
-      avatarEvolution: true
-    };
-    this.load();
-  }
+    checkAccess: function(featureName) {
+        if (this.isPremium) return true;
 
-  load() {
-    try {
-      const raw = localStorage.getItem(LS_KEY);
-      if (!raw) return;
-      const data = JSON.parse(raw);
-      this.features = { ...this.features, ...data };
-    } catch (e) {
-      console.warn("Unable to load premium features", e);
+        const freeFeatures = ['practice_mode', 'daily_challenge', 'basic_analytics'];
+
+        if (freeFeatures.includes(featureName)) {
+            return true;
+        } else {
+            this.showPaywall(featureName);
+            return false;
+        }
+    },
+
+    showPaywall: function(featureName) {
+        alert(`🔒 PREMIUM FEATURE LOCKED\n\nThe feature "${featureName}" is only available for Evo 7 Pro users.\nUpgrade now to unlock unlimited tests and AI explanations.`);
+    },
+
+    unlock: function() {
+        this.isPremium = true;
+        alert("🌟 Welcome to Premium! All features unlocked.");
     }
-  }
-
-  save() {
-    localStorage.setItem(LS_KEY, JSON.stringify(this.features));
-  }
-
-  isUnlocked(name) {
-    return !!this.features[name];
-  }
-
-  unlockFeature(name) {
-    this.features[name] = true;
-    this.save();
-  }
-
-  getAvailableFeatures() {
-    return { ...this.features };
-  }
-}
+};

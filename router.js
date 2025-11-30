@@ -1,23 +1,42 @@
+// router.js
 export class Router {
-  constructor() {
-    this.current = "home";
-  }
+    constructor() {
+        this.routes = {};
+        this.currentRoute = '';
+    }
 
-  init() {
-    const buttons = document.querySelectorAll(".nav-btn");
-    buttons.forEach(btn => {
-      btn.addEventListener("click", () => {
-        const target = btn.getAttribute("data-target");
-        if (target) this.navigate(target);
-      });
-    });
-  }
+    init() {
+        // Definir rutas
+        this.routes = {
+            dashboard: () => window.satApp.showDashboard(),
+            practice: () => window.satApp.startQuiz(window.satApp.currentSubject),
+            exam: () => window.satApp.startExam(),
+            analytics: () => window.satApp.showAnalytics()
+        };
 
-  navigate(target) {
-    this.current = target;
-    const views = document.querySelectorAll(".view");
-    views.forEach(v => v.classList.remove("active"));
-    const viewEl = document.getElementById(`view-${target}`);
-    if (viewEl) viewEl.classList.add("active");
-  }
+        // Manejar clic en botones de navegación
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const route = e.target.getAttribute('data-view');
+                this.navigate(route);
+            });
+        });
+
+        // Navegación inicial
+        this.navigate('dashboard');
+    }
+
+    navigate(route) {
+        if (this.routes[route]) {
+            this.currentRoute = route;
+            this.routes[route]();
+        } else {
+            console.error('Route not found:', route);
+        }
+    }
+
+    getCurrentRoute() {
+        return this.currentRoute;
+    }
 }
