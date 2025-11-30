@@ -3,34 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Parent Dashboard - Beta</title>
-    <link rel="stylesheet" href="styles/style.css">
+    <title>SAT Owl Evolution - Aprende para el SAT</title>
+    <meta name="description" content="Aprende para el SAT con gamificación y seguimiento de progreso">
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a237e">
+    <link rel="icon" href="assets/icons/icon-192.png">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Parent Dashboard</h1>
-            <div class="user-info">
-                <div class="owl-level" id="owlLevel">
-                    <!-- Nivel del búho se cargará aquí -->
+            <div class="header-content">
+                <h1>🦉 SAT Owl Evolution</h1>
+                <div class="user-stats">
+                    <div class="owl-level" id="owlLevel">
+                        <span class="owl-icon">🦉</span>
+                        <div class="level-info">
+                            <strong>Nivel 1</strong>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="points" id="pointsDisplay">0 puntos</div>
                 </div>
             </div>
         </header>
-        
+
+        <nav class="main-nav">
+            <button class="nav-btn active" data-section="questions">Preguntas SAT</button>
+            <button class="nav-btn" data-section="explanations">Explicaciones</button>
+            <button class="nav-btn" data-section="premium">Premium</button>
+            <button class="nav-btn" data-section="analytics">Progreso</button>
+        </nav>
+
         <main>
-            <section class="questions-section">
-                <h2>Preguntas</h2>
-                <div id="questionsContainer"></div>
+            <!-- Sección de Preguntas -->
+            <section id="questionsSection" class="section active">
+                <div class="section-header">
+                    <h2>Práctica de Preguntas SAT</h2>
+                    <div class="filters">
+                        <select id="categoryFilter">
+                            <option value="all">Todas las categorías</option>
+                            <option value="math">Matemáticas</option>
+                            <option value="reading">Lectura</option>
+                            <option value="writing">Escritura</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="questionsContainer" class="cards-container"></div>
             </section>
-            
-            <section class="analytics-section">
-                <h2>Analíticas</h2>
+
+            <!-- Sección de Explicaciones -->
+            <section id="explanationsSection" class="section">
+                <h2>Explicaciones Detalladas</h2>
+                <div id="explanationsContainer" class="cards-container"></div>
+            </section>
+
+            <!-- Sección Premium -->
+            <section id="premiumSection" class="section">
+                <h2>Características Premium</h2>
+                <div id="premiumContainer"></div>
+            </section>
+
+            <!-- Sección Analytics -->
+            <section id="analyticsSection" class="section">
+                <h2>Tu Progreso</h2>
                 <div id="analyticsContainer"></div>
             </section>
         </main>
     </div>
 
-    <!-- Scripts -->
-    <script type="module" src="scripts/app.js"></script>
+    <!-- Modal para preguntas -->
+    <div id="questionModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
 </body>
 </html>
