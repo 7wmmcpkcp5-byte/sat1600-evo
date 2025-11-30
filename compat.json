@@ -1,0 +1,6 @@
+{
+  "version": "4.3.0",
+  "parent_module": "separated",
+  "base": "4.1.0",
+  "integration": "non-invasive"
+}
