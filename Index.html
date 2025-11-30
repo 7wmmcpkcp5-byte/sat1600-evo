@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAT Owl Evolution 🦉</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a1a2e">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🦉 SAT Owl Evolution</h1>
+            <div class="owl-widget">
+                <div class="owl-level">Nivel <span id="level">1</span></div>
+                <div class="owl-xp">XP: <span id="xp">0</span></div>
+            </div>
+        </header>
+
+        <nav class="main-nav">
+            <button class="nav-btn active" data-view="home">Inicio</button>
+            <button class="nav-btn" data-view="practice">Práctica</button>
+            <button class="nav-btn" data-view="exam">Examen</button>
+            <button class="nav-btn" data-view="analytics">Analytics</button>
+            <button class="nav-btn" data-view="parent">Padres</button>
+        </nav>
+
+        <!-- Vista Home -->
+        <div id="home-view" class="view active">
+            <div class="card">
+                <h2>¡Bienvenido!</h2>
+                <p>Prepara tu SAT con nuestra app gamificada</p>
+            </div>
+            <div class="grid">
+                <div class="feature-card" onclick="app.showView('practice')">
+                    <div class="icon">📚</div>
+                    <h3>Modo Práctica</h3>
+                    <p>Practica con preguntas y explicaciones</p>
+                </div>
+                <div class="feature-card" onclick="app.showView('exam')">
+                    <div class="icon">⏱️</div>
+                    <h3>Examen Real</h3>
+                    <p>Simulacro con temporizador</p>
+                </div>
+                <div class="feature-card" onclick="app.showView('analytics')">
+                    <div class="icon">📊</div>
+                    <h3>Tus Analytics</h3>
+                    <p>Mide tu progreso</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vista Práctica -->
+        <div id="practice-view" class="view">
+            <div class="card">
+                <h2>Modo Práctica</h2>
+                <div id="practice-progress" class="progress-bar">
+                    <div class="progress-fill" style="width: 0%"></div>
+                </div>
+                <div id="practice-content"></div>
+                <div class="practice-controls">
+                    <button id="prev-btn" class="btn secondary">Anterior</button>
+                    <button id="next-btn" class="btn primary">Siguiente</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vista Examen -->
+        <div id="exam-view" class="view">
+            <div class="card">
+                <h2>Examen SAT</h2>
+                <div class="timer" id="exam-timer">32:00</div>
+                <div id="exam-content"></div>
+                <div class="exam-controls">
+                    <button id="start-exam" class="btn primary">Comenzar Examen</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vista Analytics -->
+        <div id="analytics-view" class="view">
+            <div class="card">
+                <h2>Tus Estadísticas</h2>
+                <div id="analytics-content"></div>
+            </div>
+        </div>
+
+        <!-- Vista Padres -->
+        <div id="parent-view" class="view">
+            <div class="card">
+                <h2>Dashboard para Padres</h2>
+                <div id="parent-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
