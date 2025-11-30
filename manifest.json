@@ -1,0 +1,8 @@
+{
+  "name":"SAT OWL EVO 5.0",
+  "short_name":"SAT EVO",
+  "start_url":"index.html",
+  "display":"standalone",
+  "background_color":"#ffffff",
+  "theme_color":"#0077c8"
+}

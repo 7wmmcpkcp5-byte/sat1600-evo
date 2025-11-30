@@ -1,0 +1,1 @@
+export const questions = [{id:'demo',text:'Demo question',options:{A:'1',B:'2'},correct:'A'}];
