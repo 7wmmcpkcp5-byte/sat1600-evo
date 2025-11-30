@@ -1,0 +1,242 @@
+:root {
+    --primary-bg: #0a0a12;
+    --secondary-bg: #1a1a2e;
+    --card-bg: #252547;
+    --accent: #4a4af0;
+    --accent-hover: #6363f8;
+    --text-primary: #ffffff;
+    --text-secondary: #b0b0cc;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --error: #ef4444;
+    --border-radius: 12px;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: var(--primary-bg);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
+    padding: 0;
+    margin: 0;
+}
+
+.container {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 15px;
+    min-height: 100vh;
+}
+
+header {
+    background: var(--secondary-bg);
+    padding: 20px;
+    border-radius: var(--border-radius);
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+h1 {
+    color: var(--accent);
+    font-size: 1.5rem;
+}
+
+.owl-widget {
+    display: flex;
+    gap: 15px;
+    background: var(--card-bg);
+    padding: 10px 15px;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--accent);
+}
+
+.main-nav {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+}
+
+.nav-btn {
+    background: var(--secondary-bg);
+    color: var(--text-primary);
+    border: none;
+    padding: 12px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    flex: 1;
+    min-width: 70px;
+}
+
+.nav-btn.active {
+    background: var(--accent);
+    color: var(--primary-bg);
+    font-weight: bold;
+}
+
+.view {
+    display: none;
+}
+
+.view.active {
+    display: block;
+}
+
+.card {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: var(--border-radius);
+    margin-bottom: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.feature-card {
+    background: var(--secondary-bg);
+    padding: 20px;
+    border-radius: var(--border-radius);
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+    border: 1px solid transparent;
+}
+
+.feature-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent);
+}
+
+.feature-card .icon {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+.btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin: 5px;
+    transition: all 0.2s;
+}
+
+.btn:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+}
+
+.btn.secondary {
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+}
+
+.progress-bar {
+    background: var(--secondary-bg);
+    height: 8px;
+    border-radius: 4px;
+    margin: 15px 0;
+    overflow: hidden;
+}
+
+.progress-fill {
+    background: var(--accent);
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.timer {
+    background: var(--error);
+    color: white;
+    padding: 10px 15px;
+    border-radius: var(--border-radius);
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-align: center;
+    margin: 15px 0;
+}
+
+.question-card {
+    background: var(--secondary-bg);
+    padding: 20px;
+    border-radius: var(--border-radius);
+    margin: 15px 0;
+}
+
+.option {
+    background: var(--card-bg);
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+
+.option:hover {
+    border-color: var(--accent);
+}
+
+.option.correct {
+    background: var(--success);
+    border-color: var(--success);
+}
+
+.option.incorrect {
+    background: var(--error);
+    border-color: var(--error);
+}
+
+.practice-controls, .exam-controls {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    
+    header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .main-nav {
+        flex-wrap: nowrap;
+    }
+    
+    .nav-btn {
+        font-size: 0.8rem;
+        padding: 10px 8px;
+    }
+    
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}
