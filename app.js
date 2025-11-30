@@ -1,49 +1,59 @@
-// Sistema de Navegación SPA mejorado
-setupNavigation() {
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const section = e.target.dataset.section;
-            this.showView(section);
-            
-            // Analytics de navegación
-            this.analytics.trackNavigation(section);
-        });
-    });
-}
-
-// Modo Examen con temporizador profesional
-startExam() {
-    this.examTimer = 32 * 60; // 32 minutos en segundos
-    this.updateTimerDisplay();
-    
-    this.timerInterval = setInterval(() => {
-        this.examTimer--;
-        this.updateTimerDisplay();
+// SATOwlApp - Clase Principal Mejorada
+class SATOwlApp {
+    constructor() {
+        this.currentView = 'home';
+        this.state = {
+            user: this.loadUserState(),
+            exam: null,
+            practice: null,
+            analytics: this.loadAnalytics()
+        };
         
-        if (this.examTimer <= 0) {
-            this.finishExam();
-        }
-    }, 1000);
-    
-    this.renderExamNavigation();
-    this.renderExamQuestion(0);
-}
+        this.modules = {
+            router: new Router(),
+            exam: new ExamEngine(),
+            analytics: new AnalyticsCore(),
+            gamification: new OwlEvolution(),
+            storage: new StorageManager()
+        };
+        
+        this.init();
+    }
 
-// Sistema de scoring SAT realista
-calculateSATScore(correctAnswers, totalQuestions) {
-    const rawScore = Math.max(0, correctAnswers - (0.25 * (totalQuestions - correctAnswers)));
-    const percentage = (correctAnswers / totalQuestions) * 100;
-    
-    // Algoritmo de scaled score 200-800
-    let scaledScore = 200 + Math.round((percentage / 100) * 600);
-    
-    // Ajuste basado en dificultad (simulado)
-    const difficultyFactor = this.calculateDifficultyFactor();
-    scaledScore = Math.min(800, Math.max(200, scaledScore + difficultyFactor));
-    
-    return {
-        rawScore: Math.round(rawScore * 100) / 100,
-        percentage: Math.round(percentage * 100) / 100,
-        scaledScore: scaledScore
-    };
+    init() {
+        this.setupErrorHandling();
+        this.initializeModules();
+        this.setupNavigation();
+        this.registerServiceWorker();
+        this.setupPerformanceMonitoring();
+        
+        // Precarga estratégica
+        this.preloadCriticalAssets();
+    }
+
+    setupErrorHandling() {
+        window.addEventListener('error', (e) => {
+            this.modules.storage.logError(e.error);
+            console.error('SAT Owl Error:', e.error);
+        });
+        
+        window.addEventListener('unhandledrejection', (e) => {
+            this.modules.storage.logError(e.reason);
+            console.error('Unhandled Promise:', e.reason);
+        });
+    }
+
+    setupPerformanceMonitoring() {
+        // Monitoring de métricas vitales
+        if ('PerformanceObserver' in window) {
+            const observer = new PerformanceObserver((list) => {
+                for (const entry of list.getEntries()) {
+                    if (entry.entryType === 'paint') {
+                        this.modules.analytics.trackPerformance(entry.name, entry.startTime);
+                    }
+                }
+            });
+            observer.observe({entryTypes: ['paint', 'measure']});
+        }
+    }
 }
