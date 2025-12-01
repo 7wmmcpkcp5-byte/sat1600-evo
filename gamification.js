@@ -1,4 +1,4 @@
-// gamification.js como módulo ES6
+// gamification.js
 export class EvolutionSystem {
     constructor(xp = 0) {
         this.xp = xp;
@@ -18,7 +18,7 @@ export class EvolutionSystem {
     getLevelName() {
         const names = {
             1: "Shy Owl",
-            2: "Explorer Owl",
+            2: "Explorer Owl", 
             3: "Student Owl",
             4: "Tactical Owl",
             5: "Strategist Owl",
@@ -26,18 +26,5 @@ export class EvolutionSystem {
             7: "1600 Legend Owl"
         };
         return names[this.level] || "Unknown Level";
-    }
-
-    renderWidget(containerId) {
-        const el = document.getElementById(containerId);
-        if (!el) return;
-
-        el.innerHTML = `
-            <div class="evo-widget">
-                <h3>🦉 SAT OWL EVO</h3>
-                <p>XP: ${this.xp}</p>
-                <p>Level ${this.level}: <strong>${this.getLevelName()}</strong></p>
-            </div>
-        `;
     }
 }

@@ -1,4 +1,4 @@
-// storage.js - Sistema de almacenamiento profesional con backup
+l// storage.js - Sistema de almacenamiento profesional con backup
 class StorageSystem {
     constructor() {
         this.config = {

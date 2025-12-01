@@ -3,62 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAT OWL EVO 7 Premium</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>SAT OWL PRO - Gamified SAT Prep</title>
+    
+    <!-- Meta Tags para PWA -->
+    <meta name="description" content="Aprende para el SAT con un sistema gamificado. Sube de nivel, gana XP y mejora tus habilidades.">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <!-- Fuentes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Manifest para PWA -->
     <link rel="manifest" href="manifest.json">
+    
+    <!-- Íconos -->
+    <link rel="icon" href="icon-192.png" type="image/png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
+    <!-- Estilos -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Chart.js para gráficos en Analytics Dashboard -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="app-container">
-        <!-- Header -->
+        <!-- Encabezado de la App -->
         <header class="app-header">
-            <div class="app-title">SAT-1600</div>
-            <div class="user-info">
-                <div class="evo-badge">EVO</div>
-                <div>Alex</div>
-            </div>
+            <h1>SAT OWL PRO</h1>
+            <p>Level up your SAT skills with gamified learning</p>
+            
+            <!-- Botón para Parent Dashboard -->
+            <button class="parent-dashboard-btn">
+                👨‍👦 Parent Dashboard
+            </button>
+            
+            <!-- Botón para Analytics Dashboard -->
+            <button class="analytics-dashboard-btn">
+                📊 Analytics Dashboard
+            </button>
         </header>
 
-        <!-- Saludo -->
-        <div class="greeting">
-            <h1>Hi, Alex!</h1>
-        </div>
+        <!-- Widget de Evolución (Niveles/XP) -->
+        <section class="widget-section">
+            <div id="evolution-container"></div>
+        </section>
 
-        <!-- Score Card -->
-        <div class="score-card">
-            <div class="score-display">
-                <div class="current-score">400</div>
-                <div>Current SAT Score</div>
+        <!-- Sección Principal de Preguntas -->
+        <main class="question-section">
+            <div class="question-card">
+                <div id="question-text" class="question-text">
+                    Loading your first question...
+                </div>
+                <div id="question-options" class="question-options">
+                    <!-- Las opciones se cargarán dinámicamente -->
+                </div>
             </div>
-            <div class="xp-display">
-                <span>XP: 0</span>
-            </div>
-        </div>
+        </main>
 
-        <!-- Subject & Level -->
-        <div class="subject-card">
-            <div class="section-title">Subject & Level</div>
-            <div class="subject-info">
-                <div class="subject-name">MATH</div>
-                <div class="level-badge">Level 1</div>
-            </div>
-        </div>
+        <!-- Contenedor para Feedback/Notificaciones -->
+        <div id="feedback-container" class="feedback-container"></div>
 
-        <!-- Training Modes -->
-        <div class="training-modes">
-            <div class="section-title">Training modes</div>
-            
-            <button class="mode-button" id="practice-mode">
-                <div class="mode-title">Practice</div>
-                <div class="mode-description">Normal training, full feedback</div>
-            </button>
-            
-            <button class="mode-button" id="adaptive-mode">
-                <div class="mode-title">Adaptive</div>
-                <div class="mode-description">Difficulty tag, game engine...</div>
-            </button>
-        </div>
+        <!-- Footer con estadísticas rápidas -->
+        <footer class="app-footer">
+            <div class="footer-stats">
+                <span class="stat-item" id="total-questions">Questions: 0</span>
+                <span class="stat-item" id="accuracy-rate">Accuracy: 0%</span>
+                <span class="stat-item" id="session-streak">Streak: 0</span>
+            </div>
+            <div class="footer-links">
+                <a href="analytics-dashboard.html" class="footer-link">📈 Analytics</a>
+                <button class="footer-link" id="reset-progress-btn">🔄 Reset</button>
+                <button class="footer-link" id="export-data-btn">💾 Export</button>
+            </div>
+        </footer>
     </div>
 
-    <script type="module" src="app-main.js"></script>
+    <!-- Script principal de la aplicación -->
+    <script type="module" src="main.js"></script>
+
+    <!-- Service Worker Registration -->
+    <script>
+        // Registrar Service Worker para PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(registration => {
+                        console.log('✅ ServiceWorker registered:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('❌ ServiceWorker registration failed:', error);
+                    });
+            });
+        }
+    </script>
 </body>
 </html>
