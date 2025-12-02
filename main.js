@@ -1,4 +1,4 @@
-// main.js - Controlador principal de SAT OWL PRO
+// main.js - Controlador principal de SAT OWL PRO - VERSIÓN CORREGIDA
 import { DataService } from './data-service.js';
 import { UIComponents } from './ui-components.js';
 import { AnalyticsManager } from './analytics-manager.js';
@@ -27,8 +27,13 @@ class SATOwlApp {
             correct: 0,
             incorrect: 0,
             total: 0,
-            startTime: Date.now()
+            startTime: Date.now(),
+            sessionXP: 0
         };
+        
+        // Timeouts para limpieza
+        this.feedbackTimeout = null;
+        this.questionTimeout = null;
         
         console.log('🦉 SAT OWL PRO initialized');
     }
@@ -53,6 +58,9 @@ class SATOwlApp {
             // Verificar características premium
             this.checkPremiumFeatures();
             
+            // Verificar conexión
+            this.checkConnectionStatus();
+            
             console.log('✅ Application initialized successfully');
             
         } catch (error) {
@@ -65,6 +73,7 @@ class SATOwlApp {
         const firstVisit = !localStorage.getItem('sat_owl_first_visit');
         if (firstVisit) {
             localStorage.setItem('sat_owl_first_visit', 'true');
+            localStorage.setItem('sat_owl_version', '2.1');
             this.showWelcomeMessage();
         }
     }
@@ -92,26 +101,38 @@ class SATOwlApp {
 
     setupHeaderButtons() {
         // Parent Dashboard
-        document.querySelector('.parent-dashboard-btn').addEventListener('click', () => {
-            this.showParentDashboard();
-        });
+        const parentBtn = document.querySelector('.parent-dashboard-btn');
+        if (parentBtn) {
+            parentBtn.addEventListener('click', () => {
+                this.showParentDashboard();
+            });
+        }
         
         // Analytics Dashboard
-        document.querySelector('.analytics-dashboard-btn').addEventListener('click', () => {
-            window.location.href = 'analytics-dashboard.html';
-        });
+        const analyticsBtn = document.querySelector('.analytics-dashboard-btn');
+        if (analyticsBtn) {
+            analyticsBtn.addEventListener('click', () => {
+                window.location.href = 'analytics-dashboard.html';
+            });
+        }
     }
 
     setupEventListeners() {
         // Reset Progress
-        document.getElementById('reset-progress-btn').addEventListener('click', () => {
-            this.resetProgress();
-        });
+        const resetBtn = document.getElementById('reset-progress-btn');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', () => {
+                this.resetProgress();
+            });
+        }
         
         // Export Data
-        document.getElementById('export-data-btn').addEventListener('click', () => {
-            this.exportUserData();
-        });
+        const exportBtn = document.getElementById('export-data-btn');
+        if (exportBtn) {
+            exportBtn.addEventListener('click', () => {
+                this.exportUserData();
+            });
+        }
         
         // Manejar conexión/desconexión
         window.addEventListener('online', () => this.handleOnlineStatus());
@@ -119,12 +140,20 @@ class SATOwlApp {
         
         // Guardar datos antes de cerrar
         window.addEventListener('beforeunload', () => {
-            this.dataService.saveUser();
+            this.cleanupBeforeUnload();
         });
+        
+        // Teclado shortcuts
+        document.addEventListener('keydown', (e) => this.handleKeyboardShortcuts(e));
     }
 
     async loadNextQuestion() {
         try {
+            // Limpiar timeout anterior si existe
+            if (this.questionTimeout) {
+                clearTimeout(this.questionTimeout);
+            }
+            
             // Mostrar estado de carga
             this.showLoadingState();
             
@@ -133,6 +162,14 @@ class SATOwlApp {
             
             if (!this.currentQuestion) {
                 this.showNoQuestionsAvailable();
+                return;
+            }
+            
+            // Validar estructura de pregunta
+            if (!this.validateQuestion(this.currentQuestion)) {
+                console.error('Invalid question structure:', this.currentQuestion);
+                this.showError('Invalid question format. Loading next question...');
+                this.questionTimeout = setTimeout(() => this.loadNextQuestion(), 1000);
                 return;
             }
             
@@ -147,14 +184,34 @@ class SATOwlApp {
             
             this.isAnswerLocked = false;
             
+            // Actualizar contador de preguntas
+            this.updateQuestionCounter();
+            
         } catch (error) {
             console.error('❌ Error loading question:', error);
             this.showError('Failed to load question. Please try again.');
+            
+            // Reintentar después de 2 segundos
+            this.questionTimeout = setTimeout(() => this.loadNextQuestion(), 2000);
         }
     }
 
+    validateQuestion(question) {
+        if (!question) return false;
+        if (!question.id || !question.text || !question.options) return false;
+        if (!Array.isArray(question.options) || question.options.length === 0) return false;
+        if (typeof question.correctIndex !== 'number' || question.correctIndex < 0 || 
+            question.correctIndex >= question.options.length) return false;
+        return true;
+    }
+
     handleAnswer(selectedIndex) {
+        // Validaciones
         if (this.isAnswerLocked || !this.currentQuestion) return;
+        if (selectedIndex < 0 || selectedIndex >= this.currentQuestion.options.length) {
+            console.error('Invalid option index:', selectedIndex);
+            return;
+        }
         
         this.isAnswerLocked = true;
         
@@ -181,6 +238,17 @@ class SATOwlApp {
         
         // Calcular XP ganado
         const xpGained = this.calculateXPGained(isCorrect, responseTime);
+        this.sessionStats.sessionXP += xpGained;
+        
+        // Registrar en analytics
+        this.analytics.recordQuestion({
+            section: this.currentQuestion.section,
+            category: this.currentQuestion.category,
+            difficulty: this.currentQuestion.difficulty,
+            isCorrect: isCorrect,
+            timeSpent: responseTime,
+            questionId: this.currentQuestion.id
+        });
         
         // Guardar progreso
         const progressResult = this.dataService.saveProgress(
@@ -198,40 +266,54 @@ class SATOwlApp {
         const newAchievements = this.dataService.checkAchievements();
         
         // Mostrar resultados
-        this.showAnswerResult(isCorrect, xpGained, progressResult, newAchievements);
+        this.showAnswerResult(isCorrect, xpGained, responseTime, progressResult, newAchievements);
         
         // Actualizar UI
         this.updateUI();
         this.updateFooterStats();
         
         // Preparar siguiente pregunta después de un delay
-        setTimeout(() => {
+        const delay = CONFIG.animations?.feedbackDuration || 3000;
+        this.questionTimeout = setTimeout(() => {
             this.loadNextQuestion();
-        }, CONFIG.animations.feedbackDuration);
+        }, delay);
     }
 
     calculateXPGained(isCorrect, responseTime) {
-        let xp = CONFIG.xpPerQuestion;
+        // Valores por defecto si CONFIG no está definido
+        const config = CONFIG || {
+            xpPerQuestion: 10,
+            xpBonusCorrect: 20,
+            xpPenaltyIncorrect: 5
+        };
+        
+        let xp = config.xpPerQuestion || 10;
         
         if (isCorrect) {
-            xp += CONFIG.xpBonusCorrect;
+            xp += config.xpBonusCorrect || 20;
             
             // Bonus por velocidad
             if (responseTime < 30) xp += 15;
+            if (responseTime < 20) xp += 10; // Bonus extra por muy rápido
             
             // Bonus por dificultad
             if (this.currentQuestion.difficulty === 'hard') xp += 20;
             else if (this.currentQuestion.difficulty === 'medium') xp += 10;
         } else {
-            xp = CONFIG.xpPenaltyIncorrect;
+            xp = Math.max(0, config.xpPenaltyIncorrect || 5);
         }
         
         return Math.max(0, xp);
     }
 
-    showAnswerResult(isCorrect, xpGained, progressResult, newAchievements) {
+    showAnswerResult(isCorrect, xpGained, responseTime, progressResult, newAchievements) {
         const feedbackEl = document.getElementById('feedback-container');
         if (!feedbackEl) return;
+        
+        // Limpiar timeout anterior
+        if (this.feedbackTimeout) {
+            clearTimeout(this.feedbackTimeout);
+        }
         
         let message = '';
         let className = '';
@@ -240,7 +322,10 @@ class SATOwlApp {
             message = `✓ Correct! +${xpGained} XP`;
             className = 'feedback-correct';
             
+            // Bonus por velocidad
             if (responseTime < 20) {
+                message += ' ⚡ Very Fast!';
+            } else if (responseTime < 30) {
                 message += ' ⚡ Fast!';
             }
         } else {
@@ -249,21 +334,21 @@ class SATOwlApp {
         }
         
         // Mensaje de subida de nivel
-        if (progressResult.levelUp) {
-            message += ` 🎉 Level Up! ${progressResult.levelName}`;
+        if (progressResult && progressResult.levelUp) {
+            message += ` 🎉 Level Up! ${progressResult.levelName || 'New Level'}`;
             className = 'feedback-level-up';
         }
         
         // Logros desbloqueados
-        if (newAchievements.length > 0) {
+        if (newAchievements && newAchievements.length > 0) {
             newAchievements.forEach(achievement => {
-                message += ` 🏆 ${achievement.name}`;
+                message += ` 🏆 ${achievement.name || 'Achievement Unlocked'}`;
             });
         }
         
         // Explicación (si existe)
         let explanationHTML = '';
-        if (this.currentQuestion.explanation) {
+        if (this.currentQuestion && this.currentQuestion.explanation) {
             explanationHTML = `
                 <div class="explanation">
                     <strong>Explanation:</strong> ${this.currentQuestion.explanation}
@@ -281,7 +366,7 @@ class SATOwlApp {
         `;
         
         // Auto-ocultar después de 3 segundos
-        setTimeout(() => {
+        this.feedbackTimeout = setTimeout(() => {
             feedbackEl.innerHTML = '';
         }, 3000);
     }
@@ -321,14 +406,22 @@ class SATOwlApp {
             `;
             
             // Configurar botones
-            document.getElementById('reset-questions-btn').addEventListener('click', () => {
-                this.dataService.user.seenQuestions = [];
-                this.loadNextQuestion();
-            });
+            const resetBtn = document.getElementById('reset-questions-btn');
+            if (resetBtn) {
+                resetBtn.addEventListener('click', () => {
+                    this.dataService.user.seenQuestions = [];
+                    this.loadNextQuestion();
+                });
+            }
             
-            document.getElementById('unlock-premium-btn').addEventListener('click', () => {
-                this.premiumManager.unlock();
-            });
+            const unlockBtn = document.getElementById('unlock-premium-btn');
+            if (unlockBtn) {
+                unlockBtn.addEventListener('click', () => {
+                    if (this.premiumManager && this.premiumManager.unlock) {
+                        this.premiumManager.unlock();
+                    }
+                });
+            }
         }
         
         if (optionsEl) {
@@ -338,76 +431,136 @@ class SATOwlApp {
 
     updateUI() {
         // Actualizar widget de evolución
-        this.uiComponents.renderEvolutionWidget(this.dataService.user);
+        if (this.uiComponents && this.uiComponents.renderEvolutionWidget) {
+            this.uiComponents.renderEvolutionWidget(this.dataService.user);
+        }
+        
+        // Actualizar cualquier otro componente UI
+        this.updateQuestionCounter();
     }
 
     updateFooterStats() {
-        const performance = this.analytics.getOverallPerformance();
-        
-        document.getElementById('total-questions').textContent = 
-            `Questions: ${performance.totalQuestions}`;
-        
-        document.getElementById('accuracy-rate').textContent = 
-            `Accuracy: ${performance.accuracy}%`;
-        
-        document.getElementById('session-streak').textContent = 
-            `Streak: ${this.sessionStats.correct}`;
+        try {
+            const performance = this.analytics.getOverallPerformance();
+            
+            const totalEl = document.getElementById('total-questions');
+            const accuracyEl = document.getElementById('accuracy-rate');
+            const streakEl = document.getElementById('session-streak');
+            
+            if (totalEl) {
+                totalEl.textContent = `Questions: ${performance.totalQuestions || 0}`;
+            }
+            
+            if (accuracyEl) {
+                accuracyEl.textContent = `Accuracy: ${performance.accuracy || 0}%`;
+            }
+            
+            if (streakEl) {
+                streakEl.textContent = `Streak: ${this.sessionStats.correct || 0}`;
+            }
+        } catch (error) {
+            console.warn('Error updating footer stats:', error);
+        }
+    }
+
+    updateQuestionCounter() {
+        const counterEl = document.getElementById('question-counter');
+        if (counterEl) {
+            counterEl.textContent = `Q${this.sessionStats.total + 1}`;
+        }
     }
 
     showParentDashboard() {
-        // Importar y renderizar parent dashboard
-        import('./parent-dashboard.js').then(module => {
-            const appContainer = document.querySelector('.app-container');
-            appContainer.innerHTML = '<div id="parent-dashboard-container"></div>';
-            const container = document.getElementById('parent-dashboard-container');
-            module.renderParentDashboard(container, this.analytics, this.dataService);
-        }).catch(error => {
-            console.error('Error loading parent dashboard:', error);
-            this.showError('Could not load parent dashboard');
-        });
+        try {
+            import('./parent-dashboard.js').then(module => {
+                const appContainer = document.querySelector('.app-container');
+                if (!appContainer) return;
+                
+                appContainer.innerHTML = '<div id="parent-dashboard-container"></div>';
+                const container = document.getElementById('parent-dashboard-container');
+                if (container && module.renderParentDashboard) {
+                    module.renderParentDashboard(container, this.analytics, this.dataService);
+                }
+            }).catch(error => {
+                console.error('Error loading parent dashboard:', error);
+                this.showError('Could not load parent dashboard');
+            });
+        } catch (error) {
+            console.error('Error in showParentDashboard:', error);
+        }
     }
 
     resetProgress() {
         if (confirm('Are you sure you want to reset ALL progress? This cannot be undone.')) {
-            this.dataService.resetProgress();
-            this.analytics.resetData();
-            this.sessionStats = { correct: 0, incorrect: 0, total: 0, startTime: Date.now() };
-            this.updateUI();
-            this.updateFooterStats();
-            this.loadNextQuestion();
-            this.showMessage('Progress reset successfully', 'success');
+            try {
+                this.dataService.resetProgress();
+                this.analytics.resetStats();
+                this.sessionStats = { 
+                    correct: 0, 
+                    incorrect: 0, 
+                    total: 0, 
+                    startTime: Date.now(),
+                    sessionXP: 0 
+                };
+                this.updateUI();
+                this.updateFooterStats();
+                this.loadNextQuestion();
+                this.showMessage('Progress reset successfully', 'success');
+            } catch (error) {
+                console.error('Error resetting progress:', error);
+                this.showError('Failed to reset progress');
+            }
         }
     }
 
     exportUserData() {
-        const userData = this.dataService.exportUserData();
-        const analyticsData = this.analytics.exportData();
-        
-        const exportData = {
-            user: userData,
-            analytics: analyticsData,
-            exportedAt: new Date().toISOString(),
-            version: '2.0'
-        };
-        
-        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `sat-owl-backup-${new Date().toISOString().split('T')[0]}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
-        
-        this.showMessage('Data exported successfully', 'success');
+        try {
+            const userData = this.dataService.exportUserData();
+            const analyticsData = this.analytics.exportData();
+            
+            const exportData = {
+                user: userData,
+                analytics: analyticsData,
+                session: this.sessionStats,
+                exportedAt: new Date().toISOString(),
+                version: '2.1'
+            };
+            
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `sat-owl-backup-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            this.showMessage('Data exported successfully', 'success');
+        } catch (error) {
+            console.error('Error exporting data:', error);
+            this.showError('Failed to export data');
+        }
     }
 
     checkPremiumFeatures() {
-        const featureStatus = this.premiumManager.getFeatureStatus();
-        console.log('Premium features status:', featureStatus);
-        
-        // Si no es premium, mostrar alguna indicación
-        if (!featureStatus.isPremium) {
-            console.log('🔒 Free version - some features locked');
+        try {
+            if (this.premiumManager && this.premiumManager.getFeatureStatus) {
+                const featureStatus = this.premiumManager.getFeatureStatus();
+                console.log('Premium features status:', featureStatus);
+                
+                if (!featureStatus.isPremium) {
+                    console.log('🔒 Free version - some features locked');
+                }
+            }
+        } catch (error) {
+            console.warn('Error checking premium features:', error);
+        }
+    }
+
+    checkConnectionStatus() {
+        if (!navigator.onLine) {
+            this.handleOfflineStatus();
         }
     }
 
@@ -420,11 +573,41 @@ class SATOwlApp {
     }
 
     handleOnlineStatus() {
-        this.showMessage('Connection restored', 'success');
+        this.showMessage('Connection restored', 'success', 3000);
     }
 
     handleOfflineStatus() {
-        this.showMessage('Working offline - progress saved locally', 'warning');
+        this.showMessage('Working offline - progress saved locally', 'warning', 5000);
+    }
+
+    handleKeyboardShortcuts(e) {
+        // Shortcuts numéricos para opciones (1-4)
+        if (e.key >= '1' && e.key <= '4') {
+            const optionIndex = parseInt(e.key) - 1;
+            const options = document.querySelectorAll('.option');
+            if (options[optionIndex] && !this.isAnswerLocked) {
+                options[optionIndex].click();
+            }
+        }
+        
+        // Espacio para siguiente pregunta (cuando hay feedback)
+        if (e.code === 'Space' && this.isAnswerLocked) {
+            e.preventDefault();
+            if (this.questionTimeout) {
+                clearTimeout(this.questionTimeout);
+                this.loadNextQuestion();
+            }
+        }
+    }
+
+    cleanupBeforeUnload() {
+        // Limpiar todos los timeouts
+        if (this.feedbackTimeout) clearTimeout(this.feedbackTimeout);
+        if (this.questionTimeout) clearTimeout(this.questionTimeout);
+        
+        // Guardar datos
+        this.dataService.saveUser();
+        this.analytics.saveStats();
     }
 
     showError(message) {
@@ -437,12 +620,22 @@ class SATOwlApp {
                     </div>
                 </div>
             `;
+            
+            // Auto-ocultar después de 5 segundos
+            setTimeout(() => {
+                feedbackEl.innerHTML = '';
+            }, 5000);
         }
     }
 
     showMessage(message, type = 'info', duration = 3000) {
         const feedbackEl = document.getElementById('feedback-container');
         if (!feedbackEl) return;
+        
+        // Limpiar timeout anterior
+        if (this.feedbackTimeout) {
+            clearTimeout(this.feedbackTimeout);
+        }
         
         const className = `feedback feedback-${type}`;
         
@@ -454,7 +647,7 @@ class SATOwlApp {
             </div>
         `;
         
-        setTimeout(() => {
+        this.feedbackTimeout = setTimeout(() => {
             feedbackEl.innerHTML = '';
         }, duration);
     }
@@ -466,18 +659,31 @@ class SATOwlApp {
             analytics: this.analytics.getOverallPerformance(),
             session: this.sessionStats,
             currentQuestion: this.currentQuestion,
-            premium: this.premiumManager.getFeatureStatus()
+            premium: this.premiumManager ? this.premiumManager.getFeatureStatus() : null
         };
+    }
+
+    // Método para forzar recarga de pregunta (debug)
+    forceReloadQuestion() {
+        if (this.questionTimeout) clearTimeout(this.questionTimeout);
+        this.loadNextQuestion();
     }
 }
 
 // Inicializar aplicación cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
-    window.app = new SATOwlApp();
-    window.app.initializeApp();
-    
-    // Exponer para debugging en consola
-    console.log('App initialized. Type "app.getAppState()" for debugging info.');
+    try {
+        window.app = new SATOwlApp();
+        window.app.initializeApp();
+        
+        // Exponer para debugging en consola
+        console.log('App initialized. Type "app.getAppState()" for debugging info.');
+        console.log('Shortcuts: 1-4 for options, Space for next question');
+        
+    } catch (error) {
+        console.error('Failed to initialize app:', error);
+        alert('Failed to initialize application. Please check console for details.');
+    }
 });
 
 // Manejar errores no capturados
@@ -486,6 +692,11 @@ window.addEventListener('error', (event) => {
     if (window.app) {
         window.app.showError('An unexpected error occurred');
     }
+});
+
+// Manejar promesas rechazadas no capturadas
+window.addEventListener('unhandledrejection', (event) => {
+    console.error('Unhandled promise rejection:', event.reason);
 });
 
 // Exportar para tests
