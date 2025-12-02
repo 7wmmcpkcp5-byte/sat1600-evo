@@ -487,6 +487,26 @@ window.addEventListener('error', (event) => {
         window.app.showError('An unexpected error occurred');
     }
 });
+// En tu archivo principal:
+import { AnalyticsManager } from './analytics-manager.js';
+import { DataService } from './data-service.js';
+import { renderParentDashboard } from './parent-dashboard.js';
 
+// Inicializar servicios
+const analytics = new AnalyticsManager();
+const dataService = new DataService();
+
+// Conectar servicios
+dataService.setAnalytics(analytics);
+
+// Renderizar dashboard en un contenedor
+const container = document.getElementById('parent-dashboard');
+if (container) {
+    const dashboard = renderParentDashboard(container, analytics, dataService);
+}
+
+// También puedes usar la clase directamente:
+// const dashboard = new ParentDashboard(analytics, dataService);
+// dashboard.initialize();
 // Exportar para tests
 export { SATOwlApp };
