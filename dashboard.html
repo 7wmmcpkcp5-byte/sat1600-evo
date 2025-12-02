@@ -294,13 +294,16 @@
             <button class="action-btn secondary" id="refresh-btn">
                 🔄 Actualizar Datos
             </button>
+            <button class="action-btn secondary" id="reset-btn">
+                🗑️ Resetear Estadísticas
+            </button>
         </div>
     </div>
 
     <script type="module">
         import { AnalyticsManager } from './analytics-manager.js';
         import { DataService } from './data-service.js';
-        import { CONFIG, getLevelInfo } from './config.js';
+        import { CONFIG } from './config.js';
 
         class AnalyticsDashboard {
             constructor() {
@@ -327,16 +330,16 @@
                     // Configurar event listeners
                     this.setupEventListeners();
                     
-                    console.log('Analytics Dashboard initialized');
+                    console.log('✅ Analytics Dashboard initialized');
                     
                 } catch (error) {
-                    console.error('Error initializing dashboard:', error);
+                    console.error('❌ Error initializing dashboard:', error);
                     this.showError('Failed to load analytics data');
                 }
             }
 
             async loadData() {
-                // Simular carga asíncrona si es necesario
+                // Simular carga asíncrona
                 return new Promise((resolve) => {
                     setTimeout(() => {
                         this.stats = this.analytics.stats;
@@ -350,12 +353,15 @@
 
             renderKPIs() {
                 const user = this.dataService.user;
-                const levelInfo = getLevelInfo(user.xp);
+                
+                // Obtener información de nivel usando CONFIG
+                const levelInfo = CONFIG.getLevelInfo ? CONFIG.getLevelInfo(user.xp) : 
+                    { level: Math.floor(user.xp / 100) + 1 };
 
                 // Precisión Global
                 document.getElementById('accuracy-display').textContent = 
                     `${this.performance.accuracy}%`;
-                this.renderTrend('accuracy-trend', this.insights.performanceTrend.direction);
+                this.renderTrend('accuracy-trend', this.insights.performanceTrend?.direction || 'stable');
 
                 // Preguntas Totales
                 document.getElementById('total-q-display').textContent = 
@@ -369,13 +375,13 @@
 
                 // Tiempo Total
                 document.getElementById('time-display').textContent = 
-                    this.formatTime(this.stats.totalTimeSpent);
+                    this.analytics.formatTime(this.stats.totalTimeSpent);
                 this.renderTrend('time-trend', this.calculateTimeTrend());
 
                 // Nivel Actual
                 document.getElementById('level-display').textContent = 
-                    `Lvl ${user.level}`;
-                this.renderTrend('level-trend', 'up'); // Siempre positivo cuando hay progreso
+                    `Lvl ${user.level || levelInfo.level}`;
+                this.renderTrend('level-trend', 'up');
 
                 // Racha Actual
                 document.getElementById('current-streak-display').textContent = 
@@ -400,13 +406,19 @@
             }
 
             calculateQuestionTrend() {
-                const last7Days = this.analytics.getLastNDays(7);
-                const recentQuestions = last7Days.slice(-3).reduce((sum, day) => sum + day.questions, 0);
-                const olderQuestions = last7Days.slice(0, 3).reduce((sum, day) => sum + day.questions, 0);
-                
-                if (recentQuestions > olderQuestions * 1.2) return 'up';
-                if (recentQuestions < olderQuestions * 0.8) return 'down';
-                return 'stable';
+                try {
+                    const last7Days = this.analytics.getLastNDays(7);
+                    if (last7Days.length < 2) return 'neutral';
+                    
+                    const recentQuestions = last7Days.slice(-3).reduce((sum, day) => sum + (day.questions || 0), 0);
+                    const olderQuestions = last7Days.slice(0, 3).reduce((sum, day) => sum + (day.questions || 0), 0);
+                    
+                    if (recentQuestions > olderQuestions * 1.2) return 'up';
+                    if (recentQuestions < olderQuestions * 0.8) return 'down';
+                    return 'stable';
+                } catch (error) {
+                    return 'neutral';
+                }
             }
 
             calculateStreakTrend() {
@@ -414,13 +426,19 @@
             }
 
             calculateTimeTrend() {
-                const last7Days = this.analytics.getLastNDays(7);
-                const recentTime = last7Days.slice(-3).reduce((sum, day) => sum + day.timeSpent, 0);
-                const olderTime = last7Days.slice(0, 3).reduce((sum, day) => sum + day.timeSpent, 0);
-                
-                if (recentTime > olderTime * 1.2) return 'up';
-                if (recentTime < olderTime * 0.8) return 'down';
-                return 'stable';
+                try {
+                    const last7Days = this.analytics.getLastNDays(7);
+                    if (last7Days.length < 2) return 'neutral';
+                    
+                    const recentTime = last7Days.slice(-3).reduce((sum, day) => sum + (day.timeSpent || 0), 0);
+                    const olderTime = last7Days.slice(0, 3).reduce((sum, day) => sum + (day.timeSpent || 0), 0);
+                    
+                    if (recentTime > olderTime * 1.2) return 'up';
+                    if (recentTime < olderTime * 0.8) return 'down';
+                    return 'stable';
+                } catch (error) {
+                    return 'neutral';
+                }
             }
 
             renderCharts() {
@@ -431,17 +449,23 @@
             }
 
             renderTrendChart() {
-                const trendData = this.insights.performanceTrend.trend;
-                const labels = this.generateDayLabels(7);
-
                 const ctx = document.getElementById('trendChart').getContext('2d');
+                
+                // Obtener datos de tendencia
+                const trendData = this.insights.performanceTrend?.trend || [];
+                const labels = this.analytics.generateDayLabels(7);
+                
+                // Si no hay datos, usar datos por defecto
+                const dataPoints = trendData.length > 0 ? trendData : 
+                    Array(7).fill(this.performance.accuracy || 50);
+
                 this.charts.trend = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: labels,
                         datasets: [{
                             label: 'Precisión (%)',
-                            data: trendData.length ? trendData : Array(7).fill(this.performance.accuracy),
+                            data: dataPoints,
                             borderColor: '#4a90e2',
                             backgroundColor: 'rgba(74, 144, 226, 0.1)',
                             borderWidth: 3,
@@ -463,18 +487,27 @@
                             },
                             tooltip: {
                                 mode: 'index',
-                                intersect: false
+                                intersect: false,
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Precisión: ${context.parsed.y}%`;
+                                    }
+                                }
                             }
                         },
                         scales: {
                             y: {
-                                beginAtZero: true,
+                                beginAtZero: false,
+                                min: 0,
                                 max: 100,
                                 grid: {
                                     color: 'rgba(255, 255, 255, 0.1)'
                                 },
                                 ticks: {
-                                    color: 'var(--text-secondary)'
+                                    color: 'var(--text-secondary)',
+                                    callback: function(value) {
+                                        return value + '%';
+                                    }
                                 }
                             },
                             x: {
@@ -491,20 +524,18 @@
             }
 
             renderRadarChart() {
-                const sections = this.sections;
                 const ctx = document.getElementById('radarChart').getContext('2d');
+                
+                // Obtener datos de secciones
+                const sectionData = this.analytics.getSectionPerformanceData();
                 
                 this.charts.radar = new Chart(ctx, {
                     type: 'radar',
                     data: {
-                        labels: ['Matemáticas', 'Lectura', 'Escritura'],
+                        labels: sectionData.labels,
                         datasets: [{
                             label: 'Nivel de Dominio (%)',
-                            data: [
-                                sections.math?.accuracy || 0,
-                                sections.reading?.accuracy || 0,
-                                sections.writing?.accuracy || 0
-                            ],
+                            data: sectionData.accuracies,
                             backgroundColor: 'rgba(46, 204, 113, 0.2)',
                             borderColor: '#2ecc71',
                             pointBackgroundColor: '#2ecc71',
@@ -542,6 +573,13 @@
                         plugins: {
                             legend: {
                                 display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.label}: ${context.raw}%`;
+                                    }
+                                }
                             }
                         }
                     }
@@ -549,19 +587,17 @@
             }
 
             renderDoughnutChart() {
-                const sections = this.stats.bySection;
                 const ctx = document.getElementById('doughnutChart').getContext('2d');
+                
+                // Obtener datos de distribución
+                const sectionData = this.analytics.getSectionPerformanceData();
                 
                 this.charts.doughnut = new Chart(ctx, {
                     type: 'doughnut',
                     data: {
-                        labels: ['Matemáticas', 'Lectura', 'Escritura'],
+                        labels: sectionData.labels,
                         datasets: [{
-                            data: [
-                                sections.math?.total || 0,
-                                sections.reading?.total || 0,
-                                sections.writing?.total || 0
-                            ],
+                            data: sectionData.totals,
                             backgroundColor: [
                                 'rgba(59, 130, 246, 0.8)',
                                 'rgba(16, 185, 129, 0.8)',
@@ -586,6 +622,15 @@
                                     padding: 20,
                                     usePointStyle: true
                                 }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = Math.round((context.raw / total) * 100);
+                                        return `${context.label}: ${context.raw} preguntas (${percentage}%)`;
+                                    }
+                                }
                             }
                         },
                         cutout: '60%'
@@ -594,20 +639,18 @@
             }
 
             renderBarChart() {
-                const sections = this.stats.bySection;
                 const ctx = document.getElementById('barChart').getContext('2d');
+                
+                // Obtener datos de tiempo por sección
+                const sectionData = this.analytics.getSectionPerformanceData();
                 
                 this.charts.bar = new Chart(ctx, {
                     type: 'bar',
                     data: {
-                        labels: ['Matemáticas', 'Lectura', 'Escritura'],
+                        labels: sectionData.labels,
                         datasets: [{
                             label: 'Tiempo Promedio (seg)',
-                            data: [
-                                sections.math?.timeSpent / (sections.math?.total || 1) || 0,
-                                sections.reading?.timeSpent / (sections.reading?.total || 1) || 0,
-                                sections.writing?.timeSpent / (sections.writing?.total || 1) || 0
-                            ],
+                            data: sectionData.times,
                             backgroundColor: [
                                 'rgba(59, 130, 246, 0.8)',
                                 'rgba(16, 185, 129, 0.8)',
@@ -627,6 +670,13 @@
                         plugins: {
                             legend: {
                                 display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.label}: ${Math.round(context.raw)} segundos`;
+                                    }
+                                }
                             }
                         },
                         scales: {
@@ -636,7 +686,10 @@
                                     color: 'rgba(255, 255, 255, 0.1)'
                                 },
                                 ticks: {
-                                    color: 'var(--text-secondary)'
+                                    color: 'var(--text-secondary)',
+                                    callback: function(value) {
+                                        return value + 's';
+                                    }
                                 }
                             },
                             x: {
@@ -654,8 +707,11 @@
 
             renderInsights() {
                 const container = document.getElementById('insights-container');
-                const weakAreas = this.insights.weakAreas;
-                const recommendations = this.insights.studyRecommendations;
+                if (!container) return;
+
+                const weakAreas = this.analytics.getWeakAreas();
+                const recommendations = this.analytics.getStudyRecommendations();
+                const scorePrediction = this.analytics.predictScore();
 
                 let insightsHTML = '';
 
@@ -667,13 +723,211 @@
                             <p>Tu precisión general es <strong>${this.performance.accuracy}%</strong>.</p>
                             <p>Has completado <strong>${this.stats.totalQuestions}</strong> preguntas en total.</p>
                             <p>Tiempo promedio por pregunta: <strong>${Math.round(this.performance.averageTime)}s</strong></p>
+                            <p>Sesiones completadas: <strong>${this.stats.totalSessions}</strong></p>
                         </div>
                     </div>
                 `;
 
-                // Insight 2: Áreas de enfoque
+                // Insight 2: Área principal a mejorar
                 if (weakAreas.length > 0) {
                     const topArea = weakAreas[0];
                     insightsHTML += `
                         <div class="insight-card" style="border-color: #e74c3c;">
-                            <h4>🎯 Área Principal a Mejorar</h4
+                            <h4>🎯 Área Principal a Mejorar</h4>
+                            <div class="insight-content">
+                                <p><strong>${topArea.name}</strong></p>
+                                <p>Precisión: <strong>${topArea.accuracy}%</strong></p>
+                                <p>Preguntas intentadas: <strong>${topArea.totalQuestions}</strong></p>
+                                <p>Tipo: <strong>${topArea.type === 'category' ? 'Categoría' : 'Dificultad'}</strong></p>
+                                <p><em>${this.analytics.getWeakAreaDescription ? this.analytics.getWeakAreaDescription(topArea) : 
+                                    `Prioridad ${topArea.priority > 20 ? 'Alta' : 'Media'}`}</em></p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    insightsHTML += `
+                        <div class="insight-card" style="border-color: #2ecc71;">
+                            <h4>✅ Sin Áreas Críticas</h4>
+                            <div class="insight-content">
+                                <p>¡Excelente! No tienes áreas débiles identificadas.</p>
+                                <p>Todas tus categorías están por encima del 70% de precisión.</p>
+                                <p>Sigue practicando para mantener este nivel.</p>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Insight 3: Recomendación principal
+                if (recommendations.length > 0) {
+                    const topRec = recommendations[0];
+                    insightsHTML += `
+                        <div class="insight-card" style="border-color: #f1c40f;">
+                            <h4>💡 Recomendación de Estudio</h4>
+                            <div class="insight-content">
+                                <p><strong>${topRec.area}</strong></p>
+                                <p>${topRec.recommendation}</p>
+                                <p><em>Prioridad: ${topRec.priority > 80 ? 'Alta' : topRec.priority > 50 ? 'Media' : 'Baja'}</em></p>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Insight 4: Predicción de puntaje
+                if (scorePrediction) {
+                    insightsHTML += `
+                        <div class="insight-card" style="border-color: #9b59b6;">
+                            <h4>🎓 Predicción de Puntaje SAT</h4>
+                            <div class="insight-content">
+                                <p>Puntaje estimado: <strong>${scorePrediction.estimatedScore}/1600</strong></p>
+                                <p>Confianza: <strong>${scorePrediction.confidence}%</strong></p>
+                                <p>Basado en: <strong>${scorePrediction.basedOnQuestions} preguntas</strong></p>
+                                <p><em>${scorePrediction.recommendation}</em></p>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Insight 5: Patrones de tiempo
+                const timePatterns = this.analytics.analyzeTimePatterns();
+                if (timePatterns.bestStudyTime && timePatterns.bestStudyTime !== 'No hay suficiente data') {
+                    insightsHTML += `
+                        <div class="insight-card" style="border-color: #1abc9c;">
+                            <h4>⏰ Patrón de Estudio Óptimo</h4>
+                            <div class="insight-content">
+                                <p>Tu mejor momento para estudiar es: <strong>${timePatterns.bestStudyTime}</strong></p>
+                                <p>En ese horario tienes mayor precisión y concentración.</p>
+                                <p>Considera programar tus sesiones de estudio en esta franja horaria.</p>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Insight 6: Tendencia actual
+                const trend = this.insights.performanceTrend?.direction || 'stable';
+                const trendMessages = {
+                    'improving': '¡Tu rendimiento está mejorando! Sigue así.',
+                    'declining': 'Tu rendimiento ha disminuido. Revisa las áreas débiles.',
+                    'stable': 'Tu rendimiento se mantiene estable.'
+                };
+
+                insightsHTML += `
+                    <div class="insight-card" style="border-color: ${trend === 'improving' ? '#2ecc71' : trend === 'declining' ? '#e74c3c' : '#f1c40f'}">
+                        <h4>📊 Tendencia Actual</h4>
+                        <div class="insight-content">
+                            <p><strong>${trendMessages[trend] || trendMessages.stable}</strong></p>
+                            <p>Tendencia: <strong>${trend === 'improving' ? 'Mejorando ↑' : trend === 'declining' ? 'Decreciendo ↓' : 'Estable →'}</strong></p>
+                            <p>Esta evaluación se basa en los últimos 7 días de actividad.</p>
+                        </div>
+                    </div>
+                `;
+
+                container.innerHTML = insightsHTML;
+            }
+
+            setupEventListeners() {
+                // Exportar datos
+                document.getElementById('export-btn').addEventListener('click', () => {
+                    this.exportData();
+                });
+
+                // Refrescar dashboard
+                document.getElementById('refresh-btn').addEventListener('click', () => {
+                    this.refreshDashboard();
+                });
+
+                // Resetear estadísticas
+                document.getElementById('reset-btn').addEventListener('click', () => {
+                    this.resetStatistics();
+                });
+            }
+
+            exportData() {
+                const data = this.analytics.exportData('json');
+                const blob = new Blob([data], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `sat-owl-analytics-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                this.showMessage('Datos exportados correctamente', 'success');
+            }
+
+            refreshDashboard() {
+                // Destruir gráficos existentes
+                Object.values(this.charts).forEach(chart => {
+                    if (chart && chart.destroy) {
+                        chart.destroy();
+                    }
+                });
+                
+                this.charts = {};
+                
+                // Recargar y rerenderizar
+                this.initializeDashboard();
+                this.showMessage('Dashboard actualizado', 'info');
+            }
+
+            resetStatistics() {
+                if (confirm('¿Estás seguro de querer resetear todas las estadísticas? Esto no se puede deshacer.')) {
+                    this.analytics.resetStats();
+                    this.refreshDashboard();
+                    this.showMessage('Estadísticas reseteadas', 'success');
+                }
+            }
+
+            showError(message) {
+                const container = document.querySelector('.dashboard-container');
+                const errorHTML = `
+                    <div class="feedback feedback-error" style="margin: 20px 0;">
+                        <div class="feedback-content">
+                            <span class="feedback-text">⚠️ ${message}</span>
+                        </div>
+                    </div>
+                `;
+                
+                container.insertAdjacentHTML('afterbegin', errorHTML);
+                
+                // Auto-remover después de 5 segundos
+                setTimeout(() => {
+                    const errorEl = container.querySelector('.feedback-error');
+                    if (errorEl) {
+                        errorEl.remove();
+                    }
+                }, 5000);
+            }
+
+            showMessage(message, type = 'info') {
+                const container = document.querySelector('.dashboard-container');
+                const className = `feedback feedback-${type}`;
+                
+                const messageHTML = `
+                    <div class="${className}" style="margin: 20px 0;">
+                        <div class="feedback-content">
+                            <span class="feedback-text">${message}</span>
+                        </div>
+                    </div>
+                `;
+                
+                container.insertAdjacentHTML('afterbegin', messageHTML);
+                
+                // Auto-remover después de 3 segundos
+                setTimeout(() => {
+                    const messageEl = container.querySelector(`.feedback-${type}`);
+                    if (messageEl) {
+                        messageEl.remove();
+                    }
+                }, 3000);
+            }
+        }
+
+        // Inicializar dashboard cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', () => {
+            window.analyticsDashboard = new AnalyticsDashboard();
+        });
+    </script>
+</body>
+</html>
