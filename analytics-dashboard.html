@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <title>SAT OWL PRO - Analytics Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Estilos -->
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: var(--border-radius-lg);
+            color: white;
+        }
+        
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .kpi-card {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            border-left: 4px solid var(--primary);
+        }
+        
+        .chart-container {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1>📊 Analytics Dashboard</h1>
+            <p>Análisis detallado de tu progreso SAT</p>
+        </div>
+        
+        <div class="kpi-grid" id="kpi-container">
+            <!-- Cargado dinámicamente -->
+        </div>
+        
+        <div class="chart-container">
+            <h3>📈 Tendencia de Rendimiento</h3>
+            <canvas id="trendChart"></canvas>
+        </div>
+        
+        <div class="chart-container">
+            <h3>🎯 Precisión por Categoría</h3>
+            <canvas id="accuracyChart"></canvas>
+        </div>
+    </div>
+    
+    <script type="module" src="js/analytics-dashboard.js"></script>
+</body>
+</html>

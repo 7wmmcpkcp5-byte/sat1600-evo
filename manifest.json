@@ -1,0 +1,199 @@
+{
+  "name": "SAT OWL EVO 7 Premium",
+  "short_name": "SAT OWL",
+  "description": "Premium SAT Preparation PWA with gamified learning, adaptive practice, and detailed analytics",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "background_color": "#0f172a",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "es",
+  "dir": "ltr",
+  "categories": ["education", "productivity", "games"],
+  "prefer_related_applications": false,
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  },
+  "protocol_handlers": [
+    {
+      "protocol": "web+satapp",
+      "url": "/index.html?url=%s"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Start Practice",
+      "short_name": "Practice",
+      "description": "Jump into practice mode",
+      "url": "/index.html?mode=practice",
+      "icons": [
+        {
+          "src": "/icons/shortcut-practice-96x96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "View Analytics",
+      "short_name": "Analytics",
+      "description": "Check your progress and stats",
+      "url": "/index.html?mode=analytics",
+      "icons": [
+        {
+          "src": "/icons/shortcut-analytics-96x96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Take Full Exam",
+      "short_name": "Exam",
+      "description": "Start a full SAT simulation",
+      "url": "/index.html?mode=exam",
+      "icons": [
+        {
+          "src": "/icons/shortcut-exam-96x96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "icons": [
+    {
+      "src": "/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512x512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/mobile-practice.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Practice Mode on Mobile"
+    },
+    {
+      "src": "/screenshots/tablet-analytics.png",
+      "sizes": "1536x2048",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Analytics Dashboard on Tablet"
+    },
+    {
+      "src": "/screenshots/desktop-exam.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Exam Simulation on Desktop"
+    }
+  ],
+  "features": [
+    "SAT Practice Tests",
+    "Adaptive Learning",
+    "Gamified Progression",
+    "Detailed Analytics",
+    "Parent Dashboard",
+    "Offline Mode",
+    "Push Notifications",
+    "Cross-platform"
+  ],
+  "related_applications": [],
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "share_target": {
+    "action": "/index.html?share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "name",
+      "text": "description",
+      "url": "link"
+    }
+  },
+  "handle_links": "preferred",
+  "permissions": [
+    "clipboard-write"
+  ],
+  "file_handlers": [
+    {
+      "action": "/index.html?import",
+      "accept": {
+        "application/json": [".json"]
+      },
+      "icons": [
+        {
+          "src": "/icons/file-handler-64x64.png",
+          "sizes": "64x64",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "protocol_handlers": [
+    {
+      "protocol": "web+satowl",
+      "url": "/index.html?protocol=%s"
+    }
+  ],
+  "version": "2.0.0",
+  "author": "SAT OWL Team",
+  "orientation": "portrait-primary",
+  "id": "/?source=pwa",
+  "splash_pages": null
+}
